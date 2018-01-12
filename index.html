@@ -7,6 +7,11 @@
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
     <style>
+      table{
+        font-size: 12px;
+        max-width: 720px !important;
+      }
+
       iframe {
         width: 100%;
         border: 0;
@@ -17,8 +22,9 @@
     </style>
   </head>
   <body>
+    <script type="text/javascript" src="moment.js"></script>
     <div class="container">
-      <h1>Gmail API demo</h1>
+      <h1>Gmail Inbox</h1>
 
       <button id="authorize-button" class="btn btn-primary hidden">Authorize</button>
 
@@ -27,7 +33,7 @@
           <tr>
             <th>From</th>
             <th>Subject</th>
-            <th>Date/Time</th>
+            <th>Date</th>
           </tr>
         </thead>
         <tbody></tbody>
@@ -38,8 +44,8 @@
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
 
     <script type="text/javascript">
-      var clientId = 'xxxxxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com';
-      var apiKey = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
+      var clientId = '373105699501-qius46r9cetoabf3r6s4e1api60lv3fd.apps.googleusercontent.com';
+      var apiKey = 'AIzaSyAdiHC1xZjtMPQVJ4--yN5sjq-6LRHfp4Y';
       var scopes = 'https://www.googleapis.com/auth/gmail.readonly';
 
       function handleClientLoad() {
@@ -77,6 +83,8 @@
         }
       }
 
+
+
       function loadGmailApi() {
         gapi.client.load('gmail', 'v1', displayInbox);
       }
@@ -84,23 +92,33 @@
       function displayInbox() {
         var request = gapi.client.gmail.users.messages.list({
           'userId': 'me',
-          'labelIds': 'INBOX',
-          'maxResults': 10
+          'maxResults': 10,
+          'q': 'in:inbox'
         });
 
+        
+
         request.execute(function(response) {
+
           $.each(response.messages, function() {
             var messageRequest = gapi.client.gmail.users.messages.get({
               'userId': 'me',
               'id': this.id
             });
-
             messageRequest.execute(appendMessageRow);
           });
         });
       }
 
+      function formatDate(fullDate){
+        var standarDate = moment(fullDate).format('l');
+        return standarDate;
+      }
+
       function appendMessageRow(message) {
+        
+        var mydate = formatDate( getHeader(message.payload.headers, 'Date') );
+        
         $('.table-inbox tbody').append(
           '<tr>\
             <td>'+getHeader(message.payload.headers, 'From')+'</td>\
@@ -110,7 +128,7 @@
                 getHeader(message.payload.headers, 'Subject') +
               '</a>\
             </td>\
-            <td>'+getHeader(message.payload.headers, 'Date')+'</td>\
+            <td>'+ /* getHeader(message.payload.headers, 'Date')*/ mydate +'</td>\
           </tr>'
         );
 
